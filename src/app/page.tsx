@@ -14,7 +14,7 @@ export const revalidate = 60; // ISR: Revalidate every 60 seconds
 
 export default async function HomePage() {
   let boards = [];
-  let exams = [];
+  let exams : any = [];
   let error = null;
 
   try {
@@ -60,7 +60,7 @@ export default async function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {exams.map((exam) => (
+            {exams.map((exam : any) => (
               <ExamCard key={exam._id} exam={exam} />
             ))}
           </div>
