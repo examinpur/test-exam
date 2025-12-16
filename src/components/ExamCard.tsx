@@ -13,7 +13,7 @@ export default function ExamCard({ exam }: ExamCardProps) {
       <h3 className="text-xl font-semibold text-gray-900 mb-4">{exam.name}</h3>
       <div className="flex flex-col gap-3">
         <Link
-          href={`${examUrl}/chapters`}
+          href={examUrl}
           className="w-full px-4 py-2 bg-blue-600 text-white text-center rounded-md hover:bg-blue-700 transition-colors font-medium"
         >
           Chapter Wise

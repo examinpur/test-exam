@@ -9,15 +9,15 @@ import Footer from '@/components/Footer';
 export const revalidate = 60;
 
 interface BoardPageProps {
-  params: {
+  params: Promise<{
     board: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: BoardPageProps): Promise<Metadata> {
   try {
-    const board = await getBoardBySlug(params.board);
-    console.log(1,board)
+    const { board: boardSlug } = await params;
+    const board = await getBoardBySlug(boardSlug);
     return {
       title: `${board.name} - Exam Platform`,
       description: `Browse all exams under ${board.name}`,
@@ -30,12 +30,14 @@ export async function generateMetadata({ params }: BoardPageProps): Promise<Meta
 }
 
 export default async function BoardPage({ params }: BoardPageProps) {
+  const { board: boardSlug } = await params;
+  
   let board: Board | null = null;
   let exams: Exam[] = [];
   let error: string | null = null;
 
   try {
-    const fetchedBoard = await getBoardBySlug(params.board);
+    const fetchedBoard = await getBoardBySlug(boardSlug);
     board = fetchedBoard;
     if (fetchedBoard) {
       exams = await getExamsByBoardId(fetchedBoard._id).catch(() => []);

@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { getAllBoards, getAllExams } from '@/lib/api';
+import { Board, Exam } from '@/types';
 import Navbar from '@/components/Navbar';
 import ExamBoardNavbarWrapper from '@/components/ExamBoardNavbarWrapper';
 import ExamCard from '@/components/ExamCard';
@@ -13,19 +15,33 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function HomePage() {
-  let boards = [];
-  let exams : any = [];
-  let error = null;
+  let boards: Board[] = [];
+  let exams: Exam[] = [];
+  let error: string | null = null;
 
   try {
     [boards, exams] = await Promise.all([
       getAllBoards(),
       getAllExams(),
     ]);
+    
+    // Sort boards by order
+    boards.sort((a: Board, b: Board) => (a.order || 0) - (b.order || 0));
+    // Sort exams by order
+    exams.sort((a: Exam, b: Exam) => (a.order || 0) - (b.order || 0));
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load data';
     console.error('Error fetching data:', error);
   }
+
+  // Group exams by boardId
+  const boardsWithExams = boards.map((board: Board) => {
+    const boardExams = exams.filter((exam: Exam) => exam.boardId === board._id);
+    return {
+      ...board,
+      exams: boardExams,
+    };
+  }).filter((board) => board.exams.length > 0); // Only show boards that have exams
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
@@ -60,7 +76,7 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
-        ) : exams.length === 0 ? (
+        ) : boardsWithExams.length === 0 ? (
           <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-6 shadow-sm">
             <div className="flex items-start">
               <div className="flex-shrink-0">
@@ -84,9 +100,48 @@ export default async function HomePage() {
                 Choose an exam from the navigation bar above or select one below
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {exams.map((exam : any) => (
-                <ExamCard key={exam._id} exam={exam} />
+
+            {/* Display boards with their exams */}
+            <div className="space-y-12">
+              {boardsWithExams.map((board) => (
+                <div key={board._id} className="bg-white rounded-lg shadow-md p-6">
+                  {/* Board Header */}
+                  <div className="mb-6 pb-4 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <Link
+                        href={`/${board.slug}`}
+                        className="group"
+                      >
+                        <h3 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          {board.name}
+                        </h3>
+                      </Link>
+                      <Link
+                        href={`/${board.slug}`}
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                      >
+                        View all
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2">
+                      {board.exams.length} {board.exams.length === 1 ? 'exam' : 'exams'} available
+                    </p>
+                  </div>
+
+                  {/* Exams Grid */}
+                  {board.exams.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {board.exams.map((exam: Exam) => (
+                        <ExamCard key={exam._id} exam={exam} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">No exams available for this board.</p>
+                  )}
+                </div>
               ))}
             </div>
           </>
