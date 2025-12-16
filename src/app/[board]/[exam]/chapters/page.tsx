@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { getExamBySlug, getSubjectsByExamId, getAllChapterGroups } from '@/lib/api';
 import { Exam, Subject, ChapterGroup } from '@/types';
 import Navbar from '@/components/Navbar';
-import ExamBoardNavbar from '@/components/ExamBoardNavbar';
+import ExamBoardNavbarWrapper from '@/components/ExamBoardNavbarWrapper';
 import Footer from '@/components/Footer';
 
 export const revalidate = 60;
@@ -55,7 +55,7 @@ export default async function ChaptersPage({ params }: ChaptersPageProps) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Navbar />
-        <ExamBoardNavbar />
+        <ExamBoardNavbarWrapper />
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-800">Exam not found</p>

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { getBoardBySlug, getExamsByBoardId } from '@/lib/api';
 import { Board, Exam } from '@/types';
 import Navbar from '@/components/Navbar';
-import ExamBoardNavbar from '@/components/ExamBoardNavbar';
+import ExamBoardNavbarWrapper from '@/components/ExamBoardNavbarWrapper';
 import Footer from '@/components/Footer';
 
 export const revalidate = 60;
@@ -17,6 +17,7 @@ interface BoardPageProps {
 export async function generateMetadata({ params }: BoardPageProps): Promise<Metadata> {
   try {
     const board = await getBoardBySlug(params.board);
+    console.log(1,board)
     return {
       title: `${board.name} - Exam Platform`,
       description: `Browse all exams under ${board.name}`,
@@ -48,7 +49,7 @@ export default async function BoardPage({ params }: BoardPageProps) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Navbar />
-        <ExamBoardNavbar />
+        <ExamBoardNavbarWrapper />
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-800">Board not found</p>
@@ -62,7 +63,7 @@ export default async function BoardPage({ params }: BoardPageProps) {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <ExamBoardNavbar />
+      <ExamBoardNavbarWrapper />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         <div className="mb-8">
