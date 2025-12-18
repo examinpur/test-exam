@@ -3,12 +3,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import ChapterQuestionsClient from "@/components/ChapterQuestionsClient";
+import { PrintExamModal } from "@/components/PrintableExamSheet";
 import type { Question } from "@/types";
 
 function ChevronRightIcon() {
   return (
     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+function PrintIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+      />
     </svg>
   );
 }
@@ -28,6 +42,7 @@ export default function ChapterHeaderAndQuestionsClient({
 }) {
   const [showOptions, setShowOptions] = useState(true);
   const [showSolution, setShowSolution] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   return (
     <>
@@ -48,26 +63,37 @@ export default function ChapterHeaderAndQuestionsClient({
             </Link>
           </div>
 
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2 text-sm text-gray-700 whitespace-nowrap">
-              <input
-                type="checkbox"
-                className="h-4 w-4"
-                checked={showOptions}
-                onChange={(e) => setShowOptions(e.target.checked)}
-              />
-              Show options
-            </label>
+          <div className="flex items-center gap-4">
+            {/* Print Button */}
+            <button
+              onClick={() => setShowPrintModal(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+            >
+              <PrintIcon />
+              Download PDF
+            </button>
 
-            <label className="flex items-center gap-2 text-sm text-gray-700 whitespace-nowrap">
-              <input
-                type="checkbox"
-                className="h-4 w-4"
-                checked={showSolution}
-                onChange={(e) => setShowSolution(e.target.checked)}
-              />
-              Show solution
-            </label>
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2 text-sm text-gray-700 whitespace-nowrap">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={showOptions}
+                  onChange={(e) => setShowOptions(e.target.checked)}
+                />
+                Show options
+              </label>
+
+              <label className="flex items-center gap-2 text-sm text-gray-700 whitespace-nowrap">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={showSolution}
+                  onChange={(e) => setShowSolution(e.target.checked)}
+                />
+                Show solution
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -76,6 +102,16 @@ export default function ChapterHeaderAndQuestionsClient({
       <div className="p-6">
         <ChapterQuestionsClient questions={questions} showOptions={showOptions} showSolution={showSolution} />
       </div>
+
+      {/* Print Modal */}
+      <PrintExamModal
+        isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        questions={questions}
+        subject={subject.name}
+        chapterGroup={chapterGroup.name}
+        chapter={chapter.name}
+      />
     </>
   );
 }

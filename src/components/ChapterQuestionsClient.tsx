@@ -39,7 +39,6 @@ export default function ChapterQuestionsClient({
     return { yearGroups: groups, sortedYears: years };
   }, [questions]);
 
-  console.log("questions", questions);
 
   return (
     <MathJaxTypesetter deps={[showOptions, showSolution, questions.length]}>
@@ -79,16 +78,12 @@ export default function ChapterQuestionsClient({
                             <span className="text-xs text-red-600">-{question.negMarks} Negative</span>
                           )}
                         </div>
-
-                        {/* Question */}
                         <div
                           className="text-gray-900 mb-4 leading-relaxed"
                           dangerouslySetInnerHTML={{
                             __html: forceInlineMath(p?.content || "Question content not available"),
                           }}
                         />
-
-                        {/* Options */}
                         {showOptions && hasOptions && (
                           <div className="space-y-2 mb-4">
                             {options.map((option: any) => {
