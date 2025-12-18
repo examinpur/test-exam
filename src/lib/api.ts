@@ -28,6 +28,49 @@ async function fetchAPI<T>(endpoint: string): Promise<T> {
   }
 }
 
+export interface BulkQuestionUploadFaultyItem {
+  reason: string;
+  question_id: string;
+}
+
+export interface BulkQuestionUploadData {
+  total: number;
+  created: number;
+  failed: number;
+  faultyCount: number;
+  faulty: BulkQuestionUploadFaultyItem[];
+}
+
+export interface BulkQuestionUploadResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: BulkQuestionUploadData;
+}
+
+export async function uploadQuestionsBulk(file: File): Promise<BulkQuestionUploadResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/questions/bulk`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upload error: ${response.status} ${response.statusText}`);
+    }
+
+    const data: BulkQuestionUploadResponse = await response.json();
+    console.log('Bulk questions upload success:', data);
+    return data;
+  } catch (error) {
+    console.error('Bulk questions upload failed:', error);
+    throw error;
+  }
+}
+
 export async function getAllBoards(): Promise<Board[]> {
   return fetchAPI<Board[]>('/api/v1/boards');
 }
