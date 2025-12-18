@@ -76,6 +76,13 @@ export type Chapter = {
   updatedAt?: string;
 };
 
+export type ExamSchedule = {
+  date: string;
+  startTime: string;
+  endTime: string;
+  timezone?: string;
+};
+
 export type Paper = {
   _id: string;
   boardId: string;
@@ -92,6 +99,7 @@ export type Paper = {
   pathKey: string;
   questionPathKeys?: string[];
   questionCount: number;
+  examSchedule?: ExamSchedule;
   createdAt?: string;
   updatedAt?: string;
 };
