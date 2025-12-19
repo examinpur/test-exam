@@ -79,7 +79,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
       getChapterGroupBySlug(chapterGroupSlug).catch(() => null),
       getChapterGroupsBySubjectId(fetchedChapter.subjectId).catch(() => []),
       getAllChapters().catch(() => []),
-      getQuestionsByChapterId(fetchedChapter._id).catch(() => []),
+      getQuestionsByChapterId("694408a2050860d00810cd21").catch(() => []), // Hardcoded for testing
     ]);
 
     board = fetchedBoard;

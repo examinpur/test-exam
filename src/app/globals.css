@@ -69,21 +69,27 @@ body {
 .marking-scheme div { margin-bottom: 1px; }
 
 /* Questions */
-.questions-columns { column-count: 2; column-gap: 15px; column-rule: 1px solid #ddd; }
-.print-question { break-inside: avoid; page-break-inside: avoid; margin-bottom: 6px; font-size: 9pt; }
-.question-row { display: flex; align-items: flex-start; gap: 3px; }
+.questions-columns { column-count: 2; column-gap: 15px; column-rule: 1px solid #ddd; column-fill: balance; }
+.print-question { break-inside: auto; page-break-inside: auto; margin-bottom: 6px; font-size: 9pt; orphans: 1; widows: 1; }
+.question-row { display: flex; align-items: flex-start; gap: 3px; break-inside: auto; }
 .question-number { font-weight: bold; flex-shrink: 0; min-width: 16px; }
-.question-body { flex: 1; min-width: 0; }
+.question-body { flex: 1; min-width: 0; break-inside: auto; }
 .question-text { line-height: 1.35; }
 
 /* Options */
 .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px 10px; margin-top: 2px; font-size: 9pt; }
-.option-item { display: flex; align-items: flex-start; gap: 2px; word-break: break-word; }
+.option-item { display: flex; flex-direction: column; gap: 4px; word-break: break-word; }
+.option-text-row { display: flex; align-items: flex-start; gap: 2px; word-break: break-word; }
 .option-item .print-math-content { flex: 1; min-width: 0; word-break: break-word; }
+.option-images-wrapper { margin-top: 2px; }
 .option-label { font-weight: 600; flex-shrink: 0; }
 .correct-answer { font-weight: bold; text-decoration: underline; }
 .print-math-content { overflow-wrap: break-word; }
 
+.print-images-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin: 4px 0; break-inside: avoid; }
+.print-image-container { position: relative; background: white; border-radius: 4px; overflow: hidden; }
+.print-image { width: 100%; height: 100%; object-fit: contain; }
+.explanation-images { margin-top: 4px; }
 /* Watermark - hidden on screen */
 .print-watermark { display: none; }
 

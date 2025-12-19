@@ -43,6 +43,7 @@ export default function ChapterHeaderAndQuestionsClient({
   const [showOptions, setShowOptions] = useState(true);
   const [showSolution, setShowSolution] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [language, setLanguage] = useState<"en" | "hi">("en");
 
   return (
     <>
@@ -74,6 +75,32 @@ export default function ChapterHeaderAndQuestionsClient({
             </button>
 
             <div className="flex items-center gap-6">
+              {/* Language toggle */}
+              <div className="flex items-center gap-1 text-sm">
+                <button
+                  type="button"
+                  onClick={() => setLanguage("en")}
+                  className={`px-2 py-0.5 rounded border text-xs ${
+                    language === "en"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300"
+                  }`}
+                >
+                  EN
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguage("hi")}
+                  className={`px-2 py-0.5 rounded border text-xs ${
+                    language === "hi"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300"
+                  }`}
+                >
+                  HI
+                </button>
+              </div>
+
               <label className="flex items-center gap-2 text-sm text-gray-700 whitespace-nowrap">
                 <input
                   type="checkbox"
@@ -100,7 +127,12 @@ export default function ChapterHeaderAndQuestionsClient({
 
       {/* Questions */}
       <div className="p-6">
-        <ChapterQuestionsClient questions={questions} showOptions={showOptions} showSolution={showSolution} />
+        <ChapterQuestionsClient
+          questions={questions}
+          showOptions={showOptions}
+          showSolution={showSolution}
+          language={language}
+        />
       </div>
 
       {/* Print Modal */}
@@ -111,6 +143,7 @@ export default function ChapterHeaderAndQuestionsClient({
         subject={subject.name}
         chapterGroup={chapterGroup.name}
         chapter={chapter.name}
+        language={language}
       />
     </>
   );

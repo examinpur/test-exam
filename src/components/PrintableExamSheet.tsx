@@ -19,14 +19,46 @@ interface ExamConfig {
   duration: string;
 }
 
+const PrintImageGallery = ({ images }: { images: any[] }) => {
+  if (!images || images.length === 0) return null;
+  return (
+    <div className="print-images-grid">
+      {images.map((img, idx) => (
+        <div
+          key={idx}
+          className="print-image-container"
+          style={{ 
+            width: '100px', 
+            height: '100px', 
+            minWidth: '100px', 
+            minHeight: '100px', 
+            maxWidth: '100px', 
+            maxHeight: '100px' 
+          }}
+        >
+          <img
+            src={img.url || `https://res.cloudinary.com/dvh5crcf9/image/upload/v${img.version}/${img.publicId}`}
+            alt={img.alt || `Question image ${idx + 1}`}
+            className="print-image"
+            style={{ objectFit: 'contain', width: '100%', height: '100%' }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
 // Reusable Question Component
-const QuestionItem = ({ question, index, showOptions, showSolution }: {
+const QuestionItem = ({ question, index, showOptions, showSolution, language }: {
   question: Question;
   index: number;
   showOptions: boolean;
   showSolution: boolean;
+  language: "en" | "hi";
 }) => {
-  const p = question.prompt?.en ?? question.prompt?.hi;
+  const preferred = language;
+  const fallback = language === "en" ? "hi" : "en";
+  const p = (question as any).prompt?.[preferred] ?? (question as any).prompt?.[fallback];
   const options = p?.options ?? [];
 
   return (
@@ -35,14 +67,27 @@ const QuestionItem = ({ question, index, showOptions, showSolution }: {
         <span className="question-number">{index}.</span>
         <div className="question-body">
           <div className="print-math-content question-text" dangerouslySetInnerHTML={{ __html: formatMath(p?.content || "") }} />
+          {p?.images && p.images.length > 0 && <PrintImageGallery images={p.images} />}
           {showOptions && options.length > 0 && (
             <div className="options-grid">
               {options.map((opt: any) => (
                 <div key={opt.identifier} className={`option-item ${showSolution && question.correct?.identifiers?.includes(opt.identifier) ? "correct-answer" : ""}`}>
-                  <span className="option-label">({opt.identifier})</span>
-                  <span className="print-math-content" dangerouslySetInnerHTML={{ __html: formatMath(opt.content) }} />
+                  <div className="option-text-row">
+                    <span className="option-label">({opt.identifier})</span>
+                    <span className="print-math-content" dangerouslySetInnerHTML={{ __html: formatMath(opt.content) }} />
+                  </div>
+                  {opt.images && opt.images.length > 0 && (
+                    <div className="option-images-wrapper">
+                      <PrintImageGallery images={opt.images} />
+                    </div>
+                  )}
                 </div>
               ))}
+            </div>
+          )}
+          {showSolution && p?.explanationImages && p.explanationImages.length > 0 && (
+            <div className="explanation-images">
+              <PrintImageGallery images={p.explanationImages} />
             </div>
           )}
         </div>
@@ -52,12 +97,13 @@ const QuestionItem = ({ question, index, showOptions, showSolution }: {
 };
 
 // Section Component
-const Section = ({ title, questions, startIndex, showOptions, showSolution }: {
+const Section = ({ title, questions, startIndex, showOptions, showSolution, language }: {
   title: string;
   questions: Question[];
   startIndex: number;
   showOptions: boolean;
   showSolution: boolean;
+  language: "en" | "hi";
 }) => {
   if (!questions.length) return null;
   const marks = questions[0]?.marks || 4;
@@ -82,7 +128,14 @@ const Section = ({ title, questions, startIndex, showOptions, showSolution }: {
       </div>
       <div className="questions-columns">
         {questions.map((q, i) => (
-          <QuestionItem key={q._id} question={q} index={startIndex + i} showOptions={showOptions} showSolution={showSolution} />
+          <QuestionItem
+            key={q._id}
+            question={q}
+            index={startIndex + i}
+            showOptions={showOptions}
+            showSolution={showSolution}
+            language={language}
+          />
         ))}
       </div>
     </div>
@@ -90,12 +143,13 @@ const Section = ({ title, questions, startIndex, showOptions, showSolution }: {
 };
 
 // Main Exam Sheet Component
-const ExamSheet = ({ questions, config, subject, showOptions, showSolution }: {
+const ExamSheet = ({ questions, config, subject, showOptions, showSolution, language }: {
   questions: Question[];
   config: ExamConfig;
   subject: string;
   showOptions: boolean;
   showSolution: boolean;
+  language: "en" | "hi";
 }) => {
   const totalMarks = questions.reduce((sum, q) => sum + (q.marks || 0), 0);
   const mcq = questions.filter(q => ["MCQ", "MSQ", "TRUE_FALSE"].includes(q.kind));
@@ -123,12 +177,48 @@ const ExamSheet = ({ questions, config, subject, showOptions, showSolution }: {
       </div>
       <hr className="header-divider" />
       <div className="exam-content">
-        {mcq.length > 0 && <Section title="Section A (MCQ)" questions={mcq} startIndex={idx} showOptions={showOptions} showSolution={showSolution} />}
-        {(idx += mcq.length, numerical.length > 0) && <Section title="Section B (Numerical)" questions={numerical} startIndex={idx} showOptions={showOptions} showSolution={showSolution} />}
-        {(idx += numerical.length, other.length > 0) && <Section title="Section C" questions={other} startIndex={idx} showOptions={showOptions} showSolution={showSolution} />}
+        {mcq.length > 0 && (
+          <Section
+            title="Section A (MCQ)"
+            questions={mcq}
+            startIndex={idx}
+            showOptions={showOptions}
+            showSolution={showSolution}
+            language={language}
+          />
+        )}
+        {(idx += mcq.length, numerical.length > 0) && (
+          <Section
+            title="Section B (Numerical)"
+            questions={numerical}
+            startIndex={idx}
+            showOptions={showOptions}
+            showSolution={showSolution}
+            language={language}
+          />
+        )}
+        {(idx += numerical.length, other.length > 0) && (
+          <Section
+            title="Section C"
+            questions={other}
+            startIndex={idx}
+            showOptions={showOptions}
+            showSolution={showSolution}
+            language={language}
+          />
+        )}
         {!mcq.length && !numerical.length && !other.length && (
           <div className="questions-columns">
-            {questions.map((q, i) => <QuestionItem key={q._id} question={q} index={i + 1} showOptions={showOptions} showSolution={showSolution} />)}
+            {questions.map((q, i) => (
+              <QuestionItem
+                key={q._id}
+                question={q}
+                index={i + 1}
+                showOptions={showOptions}
+                showSolution={showSolution}
+                language={language}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -137,13 +227,14 @@ const ExamSheet = ({ questions, config, subject, showOptions, showSolution }: {
 };
 
 // Print Modal Component
-export function PrintExamModal({ isOpen, onClose, questions, subject, chapter }: {
+export function PrintExamModal({ isOpen, onClose, questions, subject, chapter, language }: {
   isOpen: boolean;
   onClose: () => void;
   questions: Question[];
   subject: string;
   chapterGroup: string;
   chapter: string;
+  language: "en" | "hi";
 }) {
   const [config, setConfig] = useState<ExamConfig>({
     instituteName: "ABC Institute",
@@ -162,33 +253,115 @@ export function PrintExamModal({ isOpen, onClose, questions, subject, chapter }:
   }, [isOpen]);
 
   const handlePrint = () => {
-    // Get or create print root
-    let printRoot = document.getElementById('print-root');
+    let printRoot = document.getElementById("print-root");
     if (!printRoot) {
-      printRoot = document.createElement('div');
-      printRoot.id = 'print-root';
+      printRoot = document.createElement("div");
+      printRoot.id = "print-root";
       document.body.appendChild(printRoot);
     }
-
-    // Copy preview content + add watermark
-    if (previewRef.current) {
-      printRoot.innerHTML = `<div class="print-watermark">coderoof</div>${previewRef.current.innerHTML}`;
-      printRoot.style.display = 'block';
-
-      const MJ = (window as any).MathJax;
-      const doPrint = () => {
-        window.print();
-        setTimeout(() => { if (printRoot) printRoot.style.display = 'none'; }, 100);
-      };
-
-      if (MJ?.typesetPromise) {
-        MJ.typesetClear?.([printRoot]);
-        MJ.typesetPromise([printRoot]).then(doPrint).catch(doPrint);
-      } else {
-        doPrint();
+  
+    if (!previewRef.current) return;
+  
+    printRoot.innerHTML = `<div class="print-watermark">coderoof</div>${previewRef.current.innerHTML}`;
+    printRoot.style.display = "block";
+  
+    const style = document.createElement("style");
+    style.textContent = `
+      @media print {
+        @page { size: A4; margin: 6mm; }
+  
+        /* Optional: print ONLY the print-root */
+        body > *:not(#print-root) { display: none !important; }
+        #print-root { display: block !important; }
+  
+        #print-root .print-container { padding: 0 !important; }
+  
+        /* ✅ FORCE masonry-like columns in print (avoid grid row blank spaces) */
+        #print-root .questions-columns {
+          display: block !important;           /* kills grid/flex if any */
+          column-count: 2 !important;
+          column-gap: 8px !important;
+          column-fill: auto !important;
+          -webkit-column-fill: auto !important;
+        }
+  
+        /* ✅ Allow questions to split when needed (no big blank gaps) */
+        #print-root .print-question {
+          margin-bottom: 2px !important;
+          break-inside: auto !important;
+          page-break-inside: auto !important;
+          -webkit-column-break-inside: auto !important;
+        }
+  
+        /* Flex/grid often refuse to fragment; make the question row printable */
+        #print-root .question-row { display: block !important; }
+        #print-root .question-number {
+          display: inline-block !important;
+          width: 14px !important;
+          vertical-align: top !important;
+        }
+        #print-root .question-body { display: inline !important; }
+  
+        /* ✅ Grid doesn't fragment nicely in print; convert options to inline-block 2-col */
+        #print-root .options-grid {
+          display: block !important;           /* kill grid */
+          margin-top: 1px !important;
+        }
+        #print-root .option-item {
+          display: inline-block !important;
+          width: 49% !important;              /* 2 columns */
+          vertical-align: top !important;
+          margin: 0 0 2px 0 !important;
+          break-inside: avoid !important;      /* keep each option together */
+          -webkit-column-break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+  
+        /* ✅ Same idea for images */
+        #print-root .print-images-grid {
+          display: block !important;           /* kill grid */
+          margin: 1px 0 !important;
+        }
+        #print-root .print-image-container {
+          display: inline-block !important;
+          width: 100px !important;
+          height: 100px !important;
+          vertical-align: top !important;
+          margin: 1px !important;
+          break-inside: avoid !important;
+          -webkit-column-break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+  
+        /* Keep section header from being stranded alone */
+        #print-root .section-header {
+          break-inside: avoid !important;
+          -webkit-column-break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
       }
+    `;
+    document.head.appendChild(style);
+  
+    const MJ = (window as any).MathJax;
+  
+    const cleanup = () => {
+      printRoot!.style.display = "none";
+      style.remove();
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+  
+    const doPrint = () => window.print();
+  
+    if (MJ?.typesetPromise) {
+      MJ.typesetClear?.([printRoot]);
+      MJ.typesetPromise([printRoot]).then(doPrint).catch(doPrint);
+    } else {
+      doPrint();
     }
   };
+  
 
   if (!isOpen) return null;
 
@@ -249,9 +422,16 @@ export function PrintExamModal({ isOpen, onClose, questions, subject, chapter }:
 
           {/* Preview */}
           <div className="flex-1 overflow-auto bg-gray-200 p-4">
-            <MathJaxTypesetter deps={[isOpen, showOptions, showSolution, config]}>
+            <MathJaxTypesetter deps={[isOpen, showOptions, showSolution, config, language]}>
               <div ref={previewRef} className="a4-preview mx-auto bg-white shadow-lg">
-                <ExamSheet questions={questions} config={config} subject={subject} showOptions={showOptions} showSolution={showSolution} />
+                <ExamSheet
+                  questions={questions}
+                  config={config}
+                  subject={subject}
+                  showOptions={showOptions}
+                  showSolution={showSolution}
+                  language={language}
+                />
               </div>
             </MathJaxTypesetter>
           </div>
