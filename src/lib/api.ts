@@ -1,4 +1,4 @@
-import { ApiResponse, Board, Exam, Subject, ChapterGroup, Chapter, Paper, Question } from '@/types';
+import { ApiResponse, Board, Exam, Subject, ChapterGroup, Chapter, Paper, Question, ExamTest, ExamSession } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -157,5 +157,139 @@ export async function getQuestionsByChapterId(chapterId: string): Promise<Questi
 
 export async function getQuestionsByPaperId(paperId: string): Promise<Question[]> {
   return fetchAPI<Question[]>(`/api/v1/questions?paperId=${paperId}`);
+}
+
+// Exam Session API functions
+export async function createExamTest(data: any): Promise<ApiResponse<any>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/exam-sessions/tests`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API fetch error for createExamTest:', error);
+    throw error;
+  }
+}
+
+export async function getExamTest(testId: string): Promise<ExamTest> {
+  return fetchAPI<ExamTest>(`/api/v1/exam-sessions/tests/${testId}`);
+}
+
+export async function createExamSession(data: any): Promise<ApiResponse<ExamSession>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/exam-sessions/sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const result: ApiResponse<ExamSession> = await response.json();
+    return result;
+  } catch (error) {
+    console.error('API fetch error for createExamSession:', error);
+    throw error;
+  }
+}
+
+export async function getExamSession(sessionId: string, userId?: string): Promise<ApiResponse<ExamSession>> {
+  try {
+    const url = userId
+      ? `${API_BASE_URL}/api/v1/exam-sessions/sessions/${sessionId}?userId=${userId}`
+      : `${API_BASE_URL}/api/v1/exam-sessions/sessions/${sessionId}`;
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API fetch error for getExamSession:', error);
+    throw error;
+  }
+}
+
+export async function getUserExamSessions(userId: string, status?: string): Promise<ApiResponse<ExamSession[]>> {
+  try {
+    const url = status
+      ? `${API_BASE_URL}/api/v1/exam-sessions/sessions/user/${userId}?status=${status}`
+      : `${API_BASE_URL}/api/v1/exam-sessions/sessions/user/${userId}`;
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API fetch error for getUserExamSessions:', error);
+    throw error;
+  }
+}
+
+export async function updateExamSession(sessionId: string, data: any): Promise<ApiResponse<ExamSession>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/exam-sessions/sessions/${sessionId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API fetch error for updateExamSession:', error);
+    throw error;
+  }
+}
+
+export async function submitExamSession(sessionId: string, userId: string): Promise<ApiResponse<ExamSession>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/exam-sessions/sessions/${sessionId}/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API fetch error for submitExamSession:', error);
+    throw error;
+  }
 }
 

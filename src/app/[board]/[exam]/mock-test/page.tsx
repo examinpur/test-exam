@@ -3,7 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Paper, Exam, Subject } from '@/types';
+import { Paper, Exam, Subject, ExamSession } from '@/types';
+import { getUserExamSessions, createExamSession, getQuestionsByPaperId } from '@/lib/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -72,10 +73,13 @@ export default function MockTestPage({ params }: MockTestPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedYear, setSelectedYear] = useState<string>('All');
-  const [activeTab, setActiveTab] = useState<'subjects' | 'papers'>('subjects');
+  const [activeTab, setActiveTab] = useState<'subjects' | 'papers' | 'history'>('subjects');
   const [boardSlug, setBoardSlug] = useState('');
   const [examSlug, setExamSlug] = useState('');
+  const [examSessions, setExamSessions] = useState<ExamSession[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
   const router = useRouter();
+  const [userId] = useState('user-123'); // TODO: Get from auth context
 
   useEffect(() => {
     const fetchData = async () => {
@@ -188,6 +192,56 @@ export default function MockTestPage({ params }: MockTestPageProps) {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
+  // Load exam sessions
+  const loadExamSessions = async () => {
+    try {
+      setLoadingSessions(true);
+      const result = await getUserExamSessions(userId);
+      if (result.success && result.data) {
+        setExamSessions(result.data);
+      }
+    } catch (err) {
+      console.error('Failed to load exam sessions:', err);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  // Handle start mock test
+  const handleStartMockTest = async (paper: Paper) => {
+    try {
+      // Create a test ID from paper
+      const testId = `paper-${paper._id}`;
+      
+      // Get questions for the paper
+      const questions = await getQuestionsByPaperId(paper._id);
+      
+      // Create exam session
+      const sessionResult = await createExamSession({
+        userId,
+        testId,
+        questionOrder: questions.map((q) => q._id),
+        ip: typeof window !== 'undefined' ? window.location.hostname : '',
+        device: typeof window !== 'undefined' ? navigator.userAgent : '',
+        platform: 'web',
+      });
+
+      if (sessionResult.success && sessionResult.data) {
+        router.push(`/${boardSlug}/${examSlug}/mock-test/${sessionResult.data._id}`);
+      } else {
+        // If session already exists, navigate to it
+        if (sessionResult.statusCode === 200 && sessionResult.data) {
+          router.push(`/${boardSlug}/${examSlug}/mock-test/${sessionResult.data._id}`);
+        } else {
+          alert('Failed to start test: ' + (sessionResult.message || 'Unknown error'));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to start mock test:', err);
+      alert('Failed to start test. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-white">
@@ -248,6 +302,19 @@ export default function MockTestPage({ params }: MockTestPageProps) {
               }`}
             >
               Mock Tests
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('history');
+                loadExamSessions();
+              }}
+              className={`px-6 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'history'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              History
             </button>
           </div>
         </div>
@@ -523,7 +590,102 @@ export default function MockTestPage({ params }: MockTestPageProps) {
         {/* Mock Tests Tab Content */}
         {activeTab === 'papers' && (
           <div className="text-center py-12">
-            <p className="text-gray-500">Mock tests coming soon...</p>
+            <p className="text-gray-500 mb-4">Select a paper to start a mock test</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+              {papers.slice(0, 6).map((paper) => (
+                <button
+                  key={paper._id}
+                  onClick={() => handleStartMockTest(paper)}
+                  className="p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition-all text-left"
+                >
+                  <h3 className="font-semibold text-gray-900 mb-2">{paper.name}</h3>
+                  <p className="text-sm text-gray-600">{paper.questionCount} questions</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* History Tab Content */}
+        {activeTab === 'history' && (
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6">Test History</h2>
+            {loadingSessions ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            ) : examSessions.length === 0 ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                <p className="text-gray-500">No test history found.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {examSessions.map((session) => (
+                  <div
+                    key={session._id}
+                    className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          Test ID: {session.testId}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span>
+                            Started: {session.startedAt ? new Date(session.startedAt).toLocaleString() : 'N/A'}
+                          </span>
+                          {session.submittedAt && (
+                            <span>
+                              Submitted: {new Date(session.submittedAt).toLocaleString()}
+                            </span>
+                          )}
+                          {session.status === 'evaluated' && (
+                            <>
+                              <span className="font-semibold text-green-600">
+                                Score: {session.totalMarks || 0}
+                              </span>
+                              <span className="font-semibold">
+                                Accuracy: {session.accuracy?.toFixed(1) || 0}%
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            session.status === 'in_progress'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : session.status === 'evaluated'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          {session.status === 'in_progress' ? 'In Progress' : 
+                           session.status === 'evaluated' ? 'Completed' : 
+                           session.status || 'Unknown'}
+                        </span>
+                        {session.status === 'in_progress' ? (
+                          <Link
+                            href={`/${boardSlug}/${examSlug}/mock-test/${session._id}`}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                          >
+                            Resume
+                          </Link>
+                        ) : session.status === 'evaluated' ? (
+                          <Link
+                            href={`/${boardSlug}/${examSlug}/mock-test/results/${session._id}`}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                          >
+                            View Results
+                          </Link>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>

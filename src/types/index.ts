@@ -150,3 +150,66 @@ export type ApiResponse<T> = {
   error?: any;
 };
 
+export type QuestionResponse = {
+  questionId: string;
+  chosenIdentifiers?: string[];
+  freeTextAnswer?: string;
+  marksAwarded?: number;
+  isCorrect?: boolean;
+  timeSpent?: number;
+  order: number;
+  flagged?: boolean;
+  meta?: any;
+};
+
+export type ExamTest = {
+  _id: string;
+  testId: string;
+  title: string;
+  examKey?: string;
+  syllabus?: string;
+  totalQuestions?: number;
+  marks?: number;
+  maxNegMarks?: number;
+  timeAllotted?: number;
+  layout?: string;
+  allowRandomize?: boolean;
+  questionPool?: string[];
+  languages?: string[];
+  isPremium?: boolean;
+  maxAttempt?: number;
+  percentileId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type ExamSession = {
+  _id: string;
+  userId: string;
+  testId: string;
+  seriesId?: string;
+  questionOrder?: string[];
+  randomSeed?: string;
+  responses?: QuestionResponse[];
+  correctCount?: number;
+  wrongCount?: number;
+  skippedCount?: number;
+  totalMarks?: number;
+  negativeMarks?: number;
+  accuracy?: number;
+  timeSpent?: number;
+  subjectStats?: any;
+  startedAt?: string;
+  lastSeenAt?: string;
+  submittedAt?: string;
+  status?: 'in_progress' | 'submitted' | 'evaluated' | 'cancelled';
+  attemptNumber?: number;
+  ip?: string;
+  device?: string;
+  platform?: string;
+  isAnalysisVisible?: boolean;
+  evaluationSnapshot?: any;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
