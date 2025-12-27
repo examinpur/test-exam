@@ -9,6 +9,7 @@ import {
   getQuestionsByChapterId,
   getChapterGroupsBySubjectId,
   getAllChapters,
+  getChapterByPath,
 } from "@/lib/api";
 import { Board, Exam, Subject, ChapterGroup, Chapter, Question } from "@/types";
 import Navbar from "@/components/Navbar";
@@ -60,7 +61,15 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
   let error: string | null = null;
 
   try {
-    const fetchedChapter = await getChapterBySlug(chapterSlug).catch(() => null);
+    
+  const fetchedChapter = await getChapterByPath({
+  boardSlug,
+  examSlug,
+  subjectSlug,
+  chapterGroupSlug,
+  chapterSlug,
+}).catch(() => null);
+
     if (!fetchedChapter) throw new Error("Chapter not found");
     chapter = fetchedChapter;
 

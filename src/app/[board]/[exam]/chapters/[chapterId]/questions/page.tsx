@@ -42,6 +42,7 @@ export default async function ChapterQuestionsPage({ params }: ChapterQuestionsP
   try {
     const fetchedExam = await getExamBySlug(params.exam);
     exam = fetchedExam;
+    console.log(`exam`, fetchedExam);
     if (fetchedExam) {
       const chapterGroups = await getAllChapterGroups();
       chapterGroup = chapterGroups.find((cg) => cg._id === params.chapterId && cg.examId === fetchedExam._id) || null;

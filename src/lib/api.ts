@@ -127,6 +127,23 @@ export async function getChapterBySlug(slug: string): Promise<Chapter> {
   return fetchAPI<Chapter>(`/api/v1/chapters?slug=${slug}`);
 }
 
+export async function getChapterByPath(args: {
+  boardSlug: string;
+  examSlug: string;
+  subjectSlug: string;
+  chapterGroupSlug: string;
+  chapterSlug: string;
+}): Promise<Chapter> {
+  const qs = new URLSearchParams({
+    boardSlug: args.boardSlug,
+    examSlug: args.examSlug,
+    subjectSlug: args.subjectSlug,
+    chapterGroupSlug: args.chapterGroupSlug,
+    chapterSlug: args.chapterSlug,
+  });
+   console.log(`/api/v1/chapters?${qs.toString()}`);
+  return fetchAPI<Chapter>(`/api/v1/chapters?${qs.toString()}`);
+}
 export async function getChaptersByChapterGroupId(chapterGroupId: string): Promise<Chapter[]> {
   return fetchAPI<Chapter[]>(`/api/v1/chapters?chapterGroupId=${chapterGroupId}`);
 }
@@ -156,6 +173,7 @@ export async function getQuestionByPathKey(pathKey: string): Promise<Question> {
 }
 
 export async function getQuestionsByChapterId(chapterId: string): Promise<Question[]> {
+  console.log(`/api/v1/questions?chapterId=${chapterId}`);
   return fetchAPI<Question[]>(`/api/v1/questions?chapterId=${chapterId}`);
 }
 

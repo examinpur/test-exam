@@ -25,23 +25,22 @@ export default async function HomePage() {
       getAllExams(),
     ]);
     
-    // Sort boards by order
     boards.sort((a: Board, b: Board) => (a.order || 0) - (b.order || 0));
-    // Sort exams by order
     exams.sort((a: Exam, b: Exam) => (a.order || 0) - (b.order || 0));
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load data';
     console.error('Error fetching data:', error);
   }
-
-  // Group exams by boardId
+  
   const boardsWithExams = boards.map((board: Board) => {
     const boardExams = exams.filter((exam: Exam) => exam.boardId === board._id);
     return {
       ...board,
       exams: boardExams,
     };
-  }).filter((board) => board.exams.length > 0); // Only show boards that have exams
+  }).filter((board) => board.exams.length > 0);
+
+  console.log('boardsWithExams', boardsWithExams);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
@@ -101,7 +100,6 @@ export default async function HomePage() {
               </p>
             </div>
 
-            {/* Display boards with their exams */}
             <div className="space-y-12">
               {boardsWithExams.map((board) => (
                 <div key={board._id} className="bg-white rounded-lg shadow-md p-6">
