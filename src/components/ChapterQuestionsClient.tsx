@@ -66,7 +66,7 @@ export default function ChapterQuestionsClient({
     });
     return { yearGroups: groups, sortedYears: years };
   }, [questions]);
-
+    console.log(questions);
   return (
     <MathJaxTypesetter deps={[showOptions, showSolution, questions.length, language]}>
       <div className="space-y-8">
