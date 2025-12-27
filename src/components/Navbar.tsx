@@ -9,14 +9,23 @@ import {
 export default function Navbar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedZipFile, setSelectedZipFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<BulkQuestionUploadResponse | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const zipFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setSelectedFile(file);
+    setUploadResult(null);
+    setUploadError(null);
+  };
+
+  const handleZipFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setSelectedZipFile(file);
     setUploadResult(null);
     setUploadError(null);
   };
@@ -32,13 +41,19 @@ export default function Navbar() {
       setUploadResult(null);
       setUploadError(null);
       console.log("Uploading JSON file to /api/v1/questions/bulk:", selectedFile);
-      const result = await uploadQuestionsBulk(selectedFile);
+      if (selectedZipFile) {
+        console.log("Also uploading ZIP file:", selectedZipFile);
+      }
+      const result = await uploadQuestionsBulk(selectedFile, selectedZipFile);
       setUploadResult(result);
       console.log("Upload complete");
-      // Keep modal open so user can see result & faulty list
       setSelectedFile(null);
+      setSelectedZipFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
+      }
+      if (zipFileInputRef.current) {
+        zipFileInputRef.current.value = "";
       }
     } catch (error) {
       console.error("Error uploading questions JSON:", error);
@@ -90,10 +105,14 @@ export default function Navbar() {
                 onClick={() => {
                   setIsModalOpen(false);
                   setSelectedFile(null);
+                  setSelectedZipFile(null);
                   setUploadResult(null);
                   setUploadError(null);
                   if (fileInputRef.current) {
                     fileInputRef.current.value = "";
+                  }
+                  if (zipFileInputRef.current) {
+                    zipFileInputRef.current.value = "";
                   }
                 }}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
@@ -155,9 +174,60 @@ export default function Navbar() {
                 )}
               </div>
 
+              <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center bg-gray-50">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-600 mb-3">
+                  {/* Zip file icon */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="h-6 w-6"
+                  >
+                    <path
+                      d="M12 3v12m0-12 4 4m-4-4-4 4"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M5 15v3.4A2.6 2.6 0 0 0 7.6 21h8.8A2.6 2.6 0 0 0 19 18.4V15"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-gray-900">
+                  Upload ZIP folder (Optional)
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  or click to browse from your device
+                </p>
+                <label className="mt-4 inline-flex cursor-pointer items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-green-700 shadow-sm ring-1 ring-inset ring-green-200 hover:bg-green-50">
+                  <span>Choose ZIP file</span>
+                  <input
+                    ref={zipFileInputRef}
+                    type="file"
+                    accept=".zip,application/zip,application/x-zip-compressed"
+                    onChange={handleZipFileChange}
+                    className="hidden"
+                  />
+                </label>
+                {selectedZipFile && (
+                  <p className="mt-3 text-xs text-gray-600">
+                    Selected file:{" "}
+                    <span className="font-medium text-gray-800">
+                      {selectedZipFile.name}
+                    </span>
+                  </p>
+                )}
+              </div>
+
               <div className="flex items-center justify-between">
                 <p className="text-xs text-gray-400">
-                  Only `.json` files are supported at the moment.
+                  JSON file is required. ZIP file is optional.
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -165,10 +235,14 @@ export default function Navbar() {
                     onClick={() => {
                       setIsModalOpen(false);
                       setSelectedFile(null);
+                      setSelectedZipFile(null);
                       setUploadResult(null);
                       setUploadError(null);
                       if (fileInputRef.current) {
                         fileInputRef.current.value = "";
+                      }
+                      if (zipFileInputRef.current) {
+                        zipFileInputRef.current.value = "";
                       }
                     }}
                     className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"

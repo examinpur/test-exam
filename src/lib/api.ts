@@ -1,6 +1,6 @@
 import { ApiResponse, Board, Exam, Subject, ChapterGroup, Chapter, Paper, Question } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.BACKEND_API_URL || 'http://localhost:8000';
 
 async function fetchAPI<T>(endpoint: string): Promise<T> {
   try {
@@ -48,9 +48,13 @@ export interface BulkQuestionUploadResponse {
   data: BulkQuestionUploadData;
 }
 
-export async function uploadQuestionsBulk(file: File): Promise<BulkQuestionUploadResponse> {
+export async function uploadQuestionsBulk(file: File, zipFile?: File | null): Promise<BulkQuestionUploadResponse> {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('questions', file);
+  
+  if (zipFile) {
+    formData.append('images', zipFile);
+  }
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/questions/bulk`, {

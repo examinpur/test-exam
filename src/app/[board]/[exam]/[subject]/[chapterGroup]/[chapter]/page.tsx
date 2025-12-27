@@ -79,7 +79,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
       getChapterGroupBySlug(chapterGroupSlug).catch(() => null),
       getChapterGroupsBySubjectId(fetchedChapter.subjectId).catch(() => []),
       getAllChapters().catch(() => []),
-      getQuestionsByChapterId("694408a2050860d00810cd21").catch(() => []), // Hardcoded for testing
+      getQuestionsByChapterId(chapter._id).catch(() => []), // Hardcoded for testing
     ]);
 
     board = fetchedBoard;
@@ -116,92 +116,78 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
     );
   }
 
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
-      <ExamBoardNavbarWrapper />
+return (
+  <div className="h-dvh flex flex-col bg-gray-50 overflow-hidden">
+    <Navbar />
+    <ExamBoardNavbarWrapper />
 
-      <main className="flex-1 w-full">
-        <div className="flex">
-          {/* Sidebar */}
-          <aside className="w-64 bg-white border-r border-gray-200 min-h-screen sticky top-0 overflow-y-auto">
-            <div className="p-4">
-              {chapterGroups.map((cg) => {
-                const groupChapters = allChapters.filter((ch) => ch.chapterGroupId === cg._id);
-                if (groupChapters.length === 0) return null;
+    <main className="flex-1 w-full overflow-hidden">
+      <div className="flex h-full">
+        {/* Sidebar */}
+        <aside className="w-64 shrink-0 bg-white border-r border-gray-200 h-full overflow-y-auto">
+          <div className="p-4">
+            {chapterGroups.map((cg) => {
+              const groupChapters = allChapters.filter((ch) => ch.chapterGroupId === cg._id);
+              if (groupChapters.length === 0) return null;
 
-                return (
-                  <div key={cg._id} className="mb-6">
-                    <h2 className="text-sm font-bold text-gray-900 mb-2 px-3">{cg.name}</h2>
-                    <div className="space-y-1">
-                      {groupChapters.map((ch) => (
-                        <Link
-                          key={ch._id}
-                          href={`/${board.slug}/${exam.slug}/${subject.slug}/${cg.slug}/${ch.slug}`}
-                          className={`block px-3 py-2 rounded text-sm transition-colors ${
-                            ch._id === chapter._id
-                              ? "bg-blue-50 text-blue-700 font-medium"
-                              : "text-gray-700 hover:bg-gray-100"
-                          }`}
-                        >
-                          {ch.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </aside>
-
-          {/* Content */}
-          <div className="flex-1">
-            {/* Back link (keep it compact) */}
-            <div className="bg-white border-b border-gray-200 px-6 py-3">
-              <Link
-                href={`/${board.slug}/${exam.slug}`}
-                className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-2 text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to {exam.name}
-              </Link>
-            </div>
-
-            {/* Breadcrumb row + toggles + questions */}
-            <div className="bg-white">
-              {error ? (
-                <div className="p-6">
-                  <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
-                    <p className="text-red-800">{error}</p>
+              return (
+                <div key={cg._id} className="mb-6">
+                  <h2 className="text-sm font-bold text-gray-900 mb-2 px-3">{cg.name}</h2>
+                  <div className="space-y-1">
+                    {groupChapters.map((ch) => (
+                      <Link
+                        key={ch._id}
+                        href={`/${board.slug}/${exam.slug}/${subject.slug}/${cg.slug}/${ch.slug}`}
+                        className={`block px-3 py-2 rounded text-sm transition-colors ${
+                          ch._id === chapter._id
+                            ? "bg-blue-50 text-blue-700 font-medium"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        {ch.name}
+                      </Link>
+                    ))}
                   </div>
                 </div>
-              ) : questions.length === 0 ? (
-                <div className="p-6">
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                    <p className="text-yellow-800">No questions available for this chapter yet.</p>
-                  </div>
+              );
+            })}
+          </div>
+        </aside>
+
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
+          <div className="flex-1 overflow-y-auto bg-white">
+            {error ? (
+              <div className="p-6">
+                <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
+                  <p className="text-red-800">{error}</p>
                 </div>
-              ) : (
-                <ChapterHeaderAndQuestionsClient
-                  questions={questions}
-                  subject={{ name: subject.name, slug: subject.slug }}
-                  chapterGroup={{ name: chapterGroup.name, slug: chapterGroup.slug }}
-                  chapter={{ name: chapter.name, slug: chapter.slug }}
-                  hrefs={{
-                    subject: `/${board.slug}/${exam.slug}/${subject.slug}`,
-                    chapterGroup: `/${board.slug}/${exam.slug}/${subject.slug}/${chapterGroup.slug}`,
-                    chapter: `/${board.slug}/${exam.slug}/${subject.slug}/${chapterGroup.slug}/${chapter.slug}`,
-                  }}
-                />
-              )}
-            </div>
+              </div>
+            ) : questions.length === 0 ? (
+              <div className="p-6">
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                  <p className="text-yellow-800">No questions available for this chapter yet.</p>
+                </div>
+              </div>
+            ) : (
+              <ChapterHeaderAndQuestionsClient
+                questions={questions}
+                subject={{ name: subject.name, slug: subject.slug }}
+                chapterGroup={{ name: chapterGroup.name, slug: chapterGroup.slug }}
+                chapter={{ name: chapter.name, slug: chapter.slug }}
+                hrefs={{
+                  board: `/${board.slug}/${exam.slug}`,
+                  subject: `/${board.slug}/${exam.slug}/${subject.slug}`,
+                  chapterGroup: `/${board.slug}/${exam.slug}/${subject.slug}/${chapterGroup.slug}`,
+                  chapter: `/${board.slug}/${exam.slug}/${subject.slug}/${chapterGroup.slug}/${chapter.slug}`,
+                }}
+                exam={{ name: exam.name }}
+              />
+            )}
           </div>
         </div>
-      </main>
+      </div>
+    </main>
+  </div>
+);
 
-      <Footer />
-    </div>
-  );
 }

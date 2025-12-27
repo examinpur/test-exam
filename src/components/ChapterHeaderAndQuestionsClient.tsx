@@ -33,12 +33,14 @@ export default function ChapterHeaderAndQuestionsClient({
   chapterGroup,
   chapter,
   hrefs,
+  exam,
 }: {
   questions: Question[];
+  exam: { name: string };
   subject: { name: string; slug: string };
   chapterGroup: { name: string; slug: string };
   chapter: { name: string; slug: string };
-  hrefs: { subject: string; chapterGroup: string; chapter: string };
+  hrefs: { board: string; subject: string; chapterGroup: string; chapter: string };
 }) {
   const [showOptions, setShowOptions] = useState(true);
   const [showSolution, setShowSolution] = useState(false);
@@ -47,10 +49,19 @@ export default function ChapterHeaderAndQuestionsClient({
 
   return (
     <>
-      {/* One-row breadcrumb + toggles */}
       <div className="border-b border-gray-200 px-6 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm">
+              <Link
+                href={`/${hrefs?.board}`}
+                className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-2 text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to {exam?.name}
+              </Link>
+            <ChevronRightIcon />
             <Link href={hrefs.subject} className="text-blue-600 hover:text-blue-800 font-medium">
               {subject.name}
             </Link>
@@ -65,7 +76,6 @@ export default function ChapterHeaderAndQuestionsClient({
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Print Button */}
             <button
               onClick={() => setShowPrintModal(true)}
               className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
@@ -75,7 +85,6 @@ export default function ChapterHeaderAndQuestionsClient({
             </button>
 
             <div className="flex items-center gap-6">
-              {/* Language toggle */}
               <div className="flex items-center gap-1 text-sm">
                 <button
                   type="button"

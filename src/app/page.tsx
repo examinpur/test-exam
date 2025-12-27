@@ -71,7 +71,7 @@ export default async function HomePage() {
                 <h3 className="text-red-800 font-semibold">Error loading exams</h3>
                 <p className="text-red-700 mt-1">{error}</p>
                 <p className="text-sm text-red-600 mt-2">
-                  Please make sure the backend API is running at {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}
+                  Please make sure the backend API is running at {process.env.BACKEND_API_URL || 'http://localhost:8000'}
                 </p>
               </div>
             </div>
